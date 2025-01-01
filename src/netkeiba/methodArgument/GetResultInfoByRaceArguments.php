@@ -1,6 +1,6 @@
 <?php
 
-class GetHorseRaceExpectedByRaceArguments {
+class GetResultInfoByRaceArguments {
     public $raceId;
 
     public function __construct($raceId) {
