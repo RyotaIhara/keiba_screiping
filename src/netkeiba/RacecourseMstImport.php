@@ -39,7 +39,7 @@ class RacecourseMstImport extends Base {
         return $results;
     }
 
-    function insertRacecourseMst($racecourseList) {
+    private function insertRacecourseMst($racecourseList) {
         foreach ($racecourseList as $racecourse) {
             $sql = "INSERT INTO racecourse_mst (jyo_cd, racecourse_name) VALUES (:jyo_cd, :racecourse_name)";
 
