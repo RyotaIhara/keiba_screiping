@@ -41,10 +41,8 @@ class RaceCalendarMstImport extends Base {
 
             $crawler = $this->client->request('GET', $resultUrl);
             $crawler->filter('td.RaceCellBox.HaveData')->each(function ($node) use ($year, $month, $getDataFunction) {
-                // `Day`を取得
                 $day = $node->filter('span.Day')->count() ? $node->filter('span.Day')->text() : null;
-            
-                // `JyoName`をすべて取得
+
                 $jyoNames = $node->filter('span.JyoName')->each(function ($jyoNode) {
                     return $jyoNode->text();
                 });
