@@ -2,6 +2,7 @@
 
 require_once(dirname(__FILE__)."/Base.php");
 require_once(dirname(__FILE__)."/config.php");
+require_once(dirname(__FILE__)."/GetDataFunction.php");
 require_once(dirname(__FILE__)."/../vendor/autoload.php");
 
 use Goutte\Client;
@@ -34,12 +35,14 @@ class RaceInfoImport extends Base {
 
     function main() {
 
+        $getDataFunction = new GetDataFunction($this->client);
+
         $year = $this->year;
         $month = $this->month;
         $day = $this->day;
         $raceNum =  $this->raceNum;
         $jyoCd = $this->jyoCd;
-        $raceId = $year . $jyoCd . $month . $day . $raceNum;
+        $raceId = $year . $jyoCd . $month . $day . str_pad($raceNum, 2, '0', STR_PAD_LEFT);
 
         $tmpParams = $this->getRacecoeInfo( $raceId );
         $raceInfo = $tmpParams['raceInfo'];
@@ -58,12 +61,33 @@ class RaceInfoImport extends Base {
             'baba_state' => $raceInfo['baba_state']
         );
 
-        //$raceInfoId = $this->insertRaceInfo($raceInfoParams);
+        // race_infoにインサート
+        $checkRaceInfoParams = array(
+            ':race_date' =>  $year . '-' . $month . '-' . $day,
+            ':race_num' => $raceNum
+        );
+        if ($this->checkRaceInfo($checkRaceInfoParams, $getDataFunction)) {
+            echo "すでにrace_infoに" . 'race_id=' . $raceId . "のデータが存在しています。 \n";
+        } else {
+            //$raceInfoId = $this->insertRaceInfo($raceInfoParams);
+            $raceInfoId = 1;
+            echo 'race_id=' . $raceId . "のデータをrace_infoに作成成功しました。 \n";
 
-        //$this->insertRaceCard($raceInfoId, $horceInfoList);
-
+            // race_cardにインサート
+            $checkRaceCardParams = array(
+                'race_info_id' => $raceInfoId,
+                'uma_ban' => $jyoCd,
+            );
+            if ($this->checkRaceCard($checkRaceCardParams, $getDataFunction)) {
+                echo "すでにrace_cardに" . 'race_info_id=' . $raceInfoId . "のデータが存在しています。 \n";
+            } else {
+                //$this->insertRaceCard($raceInfoId, $horceInfoList);
+                echo 'race_info_id=' . $raceInfoId . "のデータをrace_cardに作成成功しました。 \n";
+            }
+        }
     }
 
+    /* netkeibaのサイトから、出走馬のリストを取得する */
     function getRacecoeInfo($raceId) {
         $shutubaUrl = NETKEIBA_DOMAIN_URL . 'race/shutuba.html?race_id=' . $raceId;
         $crawler = $this->client->request('GET', $shutubaUrl);
@@ -101,9 +125,7 @@ class RaceInfoImport extends Base {
 
 
         // 出走馬情報を取得
-        //$crawler->filter('td.HorseInfo')->each(function ($node) use (&$horceInfoList) {
         $crawler->filter('tr.HorseList')->each(function ($parentRow) use (&$horceInfoList) {
-            //$parentRow = $node->ancestors()->filter('tr');
             $wakuBan = $parentRow->filter('td[class^="Waku"]')->text('');
             $umaBan = $parentRow->filter('td[class^="Umaban"]')->text('');
             $horseName = $parentRow->filter('td.HorseInfo span.HorseName a')->text('');
@@ -155,6 +177,7 @@ class RaceInfoImport extends Base {
 
     }
 
+    /* race_infoにデータをインサートする */
     private function insertRaceInfo($params) {
         $sql = "INSERT INTO `race_info`(
                 `race_date`,
@@ -201,6 +224,7 @@ class RaceInfoImport extends Base {
         return $raceInfoId;
     }
 
+    /* 出走頭数リストに応じてrace_cardにデータをインサートする */
     private function insertRaceCard($raceInfoId, $horceInfoList) {
         foreach ($horceInfoList as $horceInfo) {
             $sql = "INSERT INTO `race_card`(
@@ -249,7 +273,22 @@ class RaceInfoImport extends Base {
             // 実行
             $stmt->execute();
         }
+    }
 
+    private function checkRaceInfo($params, GetDataFunction $getDataFunction) {
+        $results = $getDataFunction->getRaceInfo($params);
+        if (empty($results)) {
+            return False;
+        }
+        return True;
+    }
+
+    private function checkRaceCard($params, GetDataFunction $getDataFunction) {
+        $results = $getDataFunction->getRaceCard($params);
+        if (empty($results)) {
+            return False;
+        }
+        return True;
     }
 
 }

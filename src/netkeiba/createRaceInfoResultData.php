@@ -16,30 +16,31 @@ use Goutte\Client;
 
 $client = new Client();
 
-/*
 $getDataFunction = new GetDataFunction($client);
 $raceScheduleList = $getDataFunction->getRaceSchedule(array(
     'race_date' => '2024-01-01'
 ));
-*/
 
+/*
 $year = '2024';
 $month = '04';
 $day = '01';
 $jyoCd = '45';
+*/
 
-$getRaceList = new GetRaceList($client, $year, $month, $day, $jyoCd);
-$getRaceList->getNumberOfRaces();
-
-/*
 foreach ($raceScheduleList as $raceSchedule) {
     list($year, $month, $day) = explode('-', $raceSchedule['race_date']);
+    $jyoCd = $raceSchedule['jyo_cd'];
 
-    $raceNum = '01';
-    $raceInfoImport = new RaceInfoImport($client, $year, $month, $day, $raceSchedule['jyo_cd'], $raceNum);
-    //$raceInfoImport->main();
+    $getRaceList = new GetRaceList($client, $year, $month, $day, $jyoCd);
+    $countOfRaces = $getRaceList->getCountOfRaces();
 
-    $raceResultImport = new RaceResultImport($client, $year, $month, $day, $raceSchedule['jyo_cd']);
-    //$raceResultImport->main();
+    for ($raceNum = 1; $raceNum <= $countOfRaces; $raceNum++) {
+        $raceInfoImport = new RaceInfoImport($client, $year, $month, $day, $jyoCd, $raceNum);
+        $raceInfoImport->main();
+
+        $raceResultImport = new RaceResultImport($client, $year, $month, $day, $jyoCd);
+        //$raceResultImport->main();
+    }
+
 }
-    */

@@ -11,11 +11,3 @@ define('DB_HOST', 'host.docker.internal');
 define('DB_NAME', 'keiba');
 define('DB_USER_NAME', 'root');
 define('DB_USER_PASS', '');
-
-const NAR_RACE_FIELD_NO = [
-    'oi'        => '44',
-    'mizusawa'  => '36',
-    'kasamatsu' => '47',
-    'sonoda'    => '50',
-    'koti'      => '54',
-];

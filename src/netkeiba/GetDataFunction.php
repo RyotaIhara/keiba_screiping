@@ -37,8 +37,8 @@ class GetDataFunction extends Base {
 
     }
 
-    /* 日付からrace_infoの情報を取得する */
-    function getRaceInfoByDate($params) {
+    /* 日付とレース番号からrace_infoの情報を取得する */
+    function getRaceInfo($params) {
         $raceDate = $params['year'] . '-' . $params['month'] . '-' . $params['day'];
         $raceNum = $params['race_num'];
 
@@ -56,9 +56,34 @@ class GetDataFunction extends Base {
         $stmt = $this->pdo->prepare($sql);
         $stmt->execute($whereParams);
 
-        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $results = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        return $results[0];
+        return $results;
+
+    }
+
+    /* race_info_idと馬番号からrace_cardの情報を取得する */
+    function getRaceCard($params) {
+        $raceInfoId = $params['race_info_id'];
+        $umaBan = $params['uma_ban'];
+
+        $sql = '
+            SELECT * FROM race_card
+            WHERE race_info_id = :raceInfoId AND uma_ban = :uma_ban
+        ';
+        $whereParams = [
+            ':race_info_id' => $raceInfoId,
+            ':uma_ban' => $umaBan
+        ];
+
+        $sql .= ' LIMIT 1';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($whereParams);
+
+        $results = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $results;
 
     }
 
