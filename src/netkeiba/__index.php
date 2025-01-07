@@ -9,7 +9,6 @@
 require_once(dirname(__FILE__)."/RaceCalendarMstImport.php");
 require_once(dirname(__FILE__)."/RaceInfoImport.php");
 require_once(dirname(__FILE__)."/RaceResultImport.php");
-require_once(dirname(__FILE__)."/SummarizeCorrectAnswerRate.php");
 
 require_once(dirname(__FILE__)."/Base.php");
 require_once(dirname(__FILE__)."/config.php");

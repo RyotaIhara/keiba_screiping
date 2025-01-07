@@ -8,8 +8,25 @@ require_once(dirname(__FILE__)."/../vendor/autoload.php");
 use Goutte\Client;
 
 class RaceResultImport extends Base {
-    function __construct(Client $client){
+    var $year;
+    var $month;
+    var $day;
+    var $jyoCd;
+
+    function __construct(Client $client, $year, $month, $day, $jyoCd){
         parent::__construct($client);
+
+        // 開始年
+        $this->year  = $year;
+
+        // 終了年
+        $this->month  = $month;
+
+        // 開始月
+        $this->day  = $day;
+
+        // 終了月
+        $this->jyoCd  = $jyoCd;
     }
 
     function main() {
@@ -22,7 +39,7 @@ class RaceResultImport extends Base {
         $raceId = $year . $jyoCd . $month . $day . $raceNum;
 
         $getDataFunction = new GetDataFunction($this->client);
-        $raceInfo = $getDataFunction->getRaceInfo([
+        $raceInfo = $getDataFunction->getRaceInfoByDate([
             'year' => $year,
             'month' => $month,
             'day' => $day,

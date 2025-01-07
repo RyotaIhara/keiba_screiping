@@ -7,17 +7,38 @@ require_once(dirname(__FILE__)."/../vendor/autoload.php");
 use Goutte\Client;
 
 class RaceInfoImport extends Base {
-    function __construct(Client $client){
+    var $year;
+    var $month;
+    var $day;
+    var $jyoCd;
+    var $raceNum;
+
+    function __construct(Client $client, $year, $month, $day, $jyoCd, $raceNum){
         parent::__construct($client);
+
+        // 年
+        $this->year  = $year;
+
+        // 月
+        $this->month  = $month;
+
+        // 日にち
+        $this->day  = $day;
+
+        // 競馬場のコード
+        $this->jyoCd  = $jyoCd;
+
+        // レース番号
+        $this->raceNum  = $raceNum;
     }
 
     function main() {
 
-        $year = '2024';
-        $month = '12';
-        $day = '30';
-        $raceNum = '01';
-        $jyoCd = NAR_RACE_FIELD_NO['oi'];
+        $year = $this->year;
+        $month = $this->month;
+        $day = $this->day;
+        $raceNum =  $this->raceNum;
+        $jyoCd = $this->jyoCd;
         $raceId = $year . $jyoCd . $month . $day . $raceNum;
 
         $tmpParams = $this->getRacecoeInfo( $raceId );
@@ -37,9 +58,9 @@ class RaceInfoImport extends Base {
             'baba_state' => $raceInfo['baba_state']
         );
 
-        $raceInfoId = $this->insertRaceInfo($raceInfoParams);
+        //$raceInfoId = $this->insertRaceInfo($raceInfoParams);
 
-        $this->insertRaceCard($raceInfoId, $horceInfoList);
+        //$this->insertRaceCard($raceInfoId, $horceInfoList);
 
     }
 

@@ -3,29 +3,31 @@
 require_once(dirname(__FILE__)."/Base.php");
 require_once(dirname(__FILE__)."/config.php");
 require_once(dirname(__FILE__)."/../vendor/autoload.php");
-
 require_once(dirname(__FILE__)."/GetDataFunction.php");
 
 use Goutte\Client;
 
 class RaceCalendarMstImport extends Base {
-    const DEFAUTL_START_TARGET_YEAR  = 2024;
-    const DEFAUTL_END_TARGET_YEAR    = 2024;
-    const DEFAUTL_STRAT_TARGET_MONTH = 1;
-    const DEFAUTL_END_TARGET_MONTH   = 12;
-
     var $startTargetYear;
     var $endTargetYear;
     var $startTargetMonth;
     var $endTargetMonth;
 
-    function __construct(Client $client){
+    function __construct(Client $client, $targetDateParams){
         parent::__construct($client);
 
-        $this->startTargetYear  = self::DEFAUTL_START_TARGET_YEAR;
-        $this->endTargetYear    = self::DEFAUTL_END_TARGET_YEAR;
-        $this->startTargetMonth = self::DEFAUTL_STRAT_TARGET_MONTH;
-        $this->endTargetMonth   = self::DEFAUTL_END_TARGET_MONTH;
+        // 開始年
+        $this->startTargetYear  = $targetDateParams['startTargetYear'];
+
+        // 終了年
+        $this->endTargetYear  = $targetDateParams['endTargetYear'];
+
+        // 開始月
+        $this->startTargetMonth  = $targetDateParams['startTargetMonth'];
+
+        // 終了月
+        $this->endTargetMonth  = $targetDateParams['endTargetMonth'];
+
     }
 
     function main() {
@@ -37,11 +39,13 @@ class RaceCalendarMstImport extends Base {
             $this->startTargetMonth,
             $this->endTargetMonth
         ) as [$year, $month]) {
+            $month = str_pad($month, 2, '0', STR_PAD_LEFT);
             $resultUrl = NETKEIBA_DOMAIN_URL . 'top/calendar.html?year=' . $year .'&month=' . $month;
 
             $crawler = $this->client->request('GET', $resultUrl);
-            $crawler->filter('td.RaceCellBox.HaveData')->each(function ($node) use ($year, $month, $getDataFunction) {
+            $crawler->filter('td.RaceCellBox')->each(function ($node) use ($year, $month, $getDataFunction) {
                 $day = $node->filter('span.Day')->count() ? $node->filter('span.Day')->text() : null;
+                $day = str_pad($day, 2, '0', STR_PAD_LEFT);
 
                 $jyoNames = $node->filter('span.JyoName')->each(function ($jyoNode) {
                     return $jyoNode->text();
@@ -62,13 +66,19 @@ class RaceCalendarMstImport extends Base {
                     $jyoCd = $result[0]['jyo_cd'];
 
                     $params = array(
-                        'raceDate' => $date,
-                        'jyoCd' => $jyoCd,
+                        'race_date' => $date,
+                        'jyo_cd' => $jyoCd,
                     );
 
-                    $this->insertRaceSchedule($params);
+                    if ($this->checkRaceSchedule($params, $getDataFunction)) {
+                        echo "すでに" . 'race_date=' . $date . '、jyo_cd=' . $jyoCd . "のデータが存在しています。 \n";
+                    } else {
+                        // データがなければインサート
+                        $this->insertRaceSchedule($params);
+                        echo 'race_date=' . $date . '、jyo_cd=' . $jyoCd . "のデータ作成に成功しました。 \n";
+                    }
                 }
-        });
+            });
         }
     }
 
@@ -79,11 +89,19 @@ class RaceCalendarMstImport extends Base {
         $stmt = $this->pdo->prepare($sql);
     
         // プレースホルダーに値をバインド
-        $stmt->bindParam(':race_date', $params['raceDate'], PDO::PARAM_STR);
-        $stmt->bindParam(':jyo_cd', $params['jyoCd'], PDO::PARAM_STR);
+        $stmt->bindParam(':race_date', $params['race_date'], PDO::PARAM_STR);
+        $stmt->bindParam(':jyo_cd', $params['jyo_cd'], PDO::PARAM_STR);
     
         // 実行
         $stmt->execute();
+    }
+
+    private function checkRaceSchedule($params, GetDataFunction $getDataFunction) {
+        $results = $getDataFunction->getRaceSchedule($params);
+        if (empty($results)) {
+            return False;
+        }
+        return True;
     }
 
     protected function generateDatesAndRaceNumbers($startYear, $endYear, $startMonth, $endMonth) {

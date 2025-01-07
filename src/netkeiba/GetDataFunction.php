@@ -11,6 +11,7 @@ class GetDataFunction extends Base {
         parent::__construct($client);
     }
 
+    /* race_course_mstのデータを取得する（条件指定できる） */
     function getRacecourseMst($params) {
         $sql = 'SELECT * FROM racecourse_mst';
         $whereParams = [];
@@ -36,7 +37,8 @@ class GetDataFunction extends Base {
 
     }
 
-    function getRaceInfo($params) {
+    /* 日付からrace_infoの情報を取得する */
+    function getRaceInfoByDate($params) {
         $raceDate = $params['year'] . '-' . $params['month'] . '-' . $params['day'];
         $raceNum = $params['race_num'];
 
@@ -58,6 +60,35 @@ class GetDataFunction extends Base {
 
         return $results[0];
 
+    }
+
+    /* race_scheduleの情報を取得する（条件指定できる） */
+    function getRaceSchedule($params) {
+        $sql = 'SELECT * FROM race_schedule';
+        $whereClauses = [];
+        $whereParams = [];
+    
+        // パラメータに応じて条件を追加
+        if (isset($params['jyo_cd'])) {
+            $whereClauses[] = 'jyo_cd = :jyo_cd';
+            $whereParams[':jyo_cd'] = $params['jyo_cd'];
+        }
+        if (isset($params['race_date'])) {
+            $whereClauses[] = 'race_date = :race_date';
+            $whereParams[':race_date'] = $params['race_date'];
+        }
+    
+        // WHERE句の組み立て
+        if (!empty($whereClauses)) {
+            $sql .= ' WHERE ' . implode(' AND ', $whereClauses);
+        }
+    
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($whereParams);
+    
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+        return $results;
     }
 }
 
