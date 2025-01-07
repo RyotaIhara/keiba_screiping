@@ -40,14 +40,19 @@ class GetDataFunction extends Base {
     /* 日付とレース番号からrace_infoの情報を取得する */
     function getRaceInfo($params) {
         $raceDate = $params['year'] . '-' . $params['month'] . '-' . $params['day'];
+        $jyoCd = $params['jyo_cd'];
         $raceNum = $params['race_num'];
 
         $sql = '
             SELECT * FROM race_info
-            WHERE race_date = :race_date AND race_num = :race_num
+            WHERE 
+            race_date = :race_date 
+            AND jyo_cd = :jyo_cd
+            AND race_num = :race_num
         ';
         $whereParams = [
             ':race_date' => $raceDate,
+            ':jyo_cd' => $jyoCd,
             ':race_num' => $raceNum
         ];
 
@@ -69,11 +74,40 @@ class GetDataFunction extends Base {
 
         $sql = '
             SELECT * FROM race_card
-            WHERE race_info_id = :raceInfoId AND uma_ban = :uma_ban
+            WHERE 
+            race_info_id = :race_info_id 
+            AND uma_ban = :uma_ban
         ';
         $whereParams = [
             ':race_info_id' => $raceInfoId,
             ':uma_ban' => $umaBan
+        ];
+
+        $sql .= ' LIMIT 1';
+
+        $stmt = $this->pdo->prepare($sql);
+        $stmt->execute($whereParams);
+
+        $results = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $results;
+
+    }
+
+    /* race_info_idと馬番号からrace_resultの情報を取得する */
+    function getRaceResult($params) {
+        $raceInfoId = $params['race_info_id'];
+        $resultNum = $params['result_num'];
+
+        $sql = '
+            SELECT * FROM race_result
+            WHERE 
+            race_info_id = :race_info_id 
+            AND result_num = :result_num
+        ';
+        $whereParams = [
+            ':race_info_id' => $raceInfoId,
+            ':result_num' => $resultNum
         ];
 
         $sql .= ' LIMIT 1';

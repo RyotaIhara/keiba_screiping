@@ -63,27 +63,20 @@ class RaceInfoImport extends Base {
 
         // race_infoにインサート
         $checkRaceInfoParams = array(
-            ':race_date' =>  $year . '-' . $month . '-' . $day,
-            ':race_num' => $raceNum
+            'year' => $year,
+            'month' => $month,
+            'day' => $day,
+            'jyo_cd' => $jyoCd,
+            'race_num' => $raceNum,
         );
         if ($this->checkRaceInfo($checkRaceInfoParams, $getDataFunction)) {
             echo "すでにrace_infoに" . 'race_id=' . $raceId . "のデータが存在しています。 \n";
         } else {
-            //$raceInfoId = $this->insertRaceInfo($raceInfoParams);
-            $raceInfoId = 1;
+            $raceInfoId = $this->insertRaceInfo($raceInfoParams);
             echo 'race_id=' . $raceId . "のデータをrace_infoに作成成功しました。 \n";
 
             // race_cardにインサート
-            $checkRaceCardParams = array(
-                'race_info_id' => $raceInfoId,
-                'uma_ban' => $jyoCd,
-            );
-            if ($this->checkRaceCard($checkRaceCardParams, $getDataFunction)) {
-                echo "すでにrace_cardに" . 'race_info_id=' . $raceInfoId . "のデータが存在しています。 \n";
-            } else {
-                //$this->insertRaceCard($raceInfoId, $horceInfoList);
-                echo 'race_info_id=' . $raceInfoId . "のデータをrace_cardに作成成功しました。 \n";
-            }
+            $this->insertRaceCard($getDataFunction, $raceInfoId, $horceInfoList);
         }
     }
 
@@ -225,8 +218,17 @@ class RaceInfoImport extends Base {
     }
 
     /* 出走頭数リストに応じてrace_cardにデータをインサートする */
-    private function insertRaceCard($raceInfoId, $horceInfoList) {
+    private function insertRaceCard($getDataFunction, $raceInfoId, $horceInfoList) {
         foreach ($horceInfoList as $horceInfo) {
+            $checkRaceCardParams = array(
+                'race_info_id' => $raceInfoId,
+                'uma_ban' => $horceInfo['uma_ban'],
+            );
+            if ($this->checkRaceCard($checkRaceCardParams, $getDataFunction)) {
+                echo "すでにrace_infoに" . 'race_info_id=' . $raceInfoId . "uma_ban=" . $horceInfo['uma_ban'] . "のデータが存在しています。 \n";
+                continue;
+            }
+
             $sql = "INSERT INTO `race_card`(
                     `race_info_id`,
                     `waku_ban`,
@@ -272,6 +274,8 @@ class RaceInfoImport extends Base {
 
             // 実行
             $stmt->execute();
+
+            echo 'race_info_id=' . $raceInfoId . "uma_ban=" . $horceInfo['uma_ban'] . "のデータをrace_infoに作成成功しました。 \n";
         }
     }
 

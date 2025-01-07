@@ -17,16 +17,7 @@ use Goutte\Client;
 $client = new Client();
 
 $getDataFunction = new GetDataFunction($client);
-$raceScheduleList = $getDataFunction->getRaceSchedule(array(
-    'race_date' => '2024-01-01'
-));
-
-/*
-$year = '2024';
-$month = '04';
-$day = '01';
-$jyoCd = '45';
-*/
+$raceScheduleList = $getDataFunction->getRaceSchedule(array());
 
 foreach ($raceScheduleList as $raceSchedule) {
     list($year, $month, $day) = explode('-', $raceSchedule['race_date']);
@@ -39,8 +30,8 @@ foreach ($raceScheduleList as $raceSchedule) {
         $raceInfoImport = new RaceInfoImport($client, $year, $month, $day, $jyoCd, $raceNum);
         $raceInfoImport->main();
 
-        $raceResultImport = new RaceResultImport($client, $year, $month, $day, $jyoCd);
-        //$raceResultImport->main();
+        $raceResultImport = new RaceResultImport($client, $year, $month, $day, $jyoCd, $raceNum);
+        $raceResultImport->main();
     }
 
 }
