@@ -35,10 +35,10 @@ class GetRaceList extends Base {
         $month = $this->month;
         $day = $this->day;
         $jyoCd = $this->jyoCd;
-        $kaisaiDate = $year . $jyoCd . $month . $day;
+        $raceNum = 1;
+        $raceId = $year . $jyoCd . $month . $day . str_pad($raceNum, 2, '0', STR_PAD_LEFT);
 
-        //$raceListUrl = NETKEIBA_DOMAIN_URL . 'race/race_list.html?kaisai_date=' . $kaisaiDate;
-        $raceListUrl = 'https://nar.netkeiba.com/race/shutuba.html?race_id=202545010201';
+        $raceListUrl = NETKEIBA_DOMAIN_URL . 'race/shutuba.html?race_id=' . $raceId;
         $crawler = $this->client->request('GET', $raceListUrl);
 
         $crawler->filter('div.RaceNumWrap ul.fc li')->each(function ($node) use (&$results) {

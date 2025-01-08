@@ -96,7 +96,7 @@ class RaceInfoImport extends Base {
             $distance = $node->filter('span')->eq(0)->text();
             $raceInfo['distance'] = trim($distance);
 
-            if (preg_match('/^(ダ|芝)(\d+m)$/', $distance, $matches)) {
+            if (preg_match('/^(ダ|芝|障)(\d+m)$/', $distance, $matches)) {
                 $raceInfo['course_type'] = $matches[1];
                 $raceInfo['distance'] = $matches[2];
             } else {
@@ -104,7 +104,7 @@ class RaceInfoImport extends Base {
             }
 
             // コース
-            preg_match('/\((右|左)\)/', $timeText, $courseMatch);
+            preg_match('/\((右|左|直)\)/', $timeText, $courseMatch);
             $raceInfo['rotation'] = str_replace(['(', ')'], '', $courseMatch[0])?? '';;
 
             // 天候
@@ -225,7 +225,7 @@ class RaceInfoImport extends Base {
                 'uma_ban' => $horceInfo['uma_ban'],
             );
             if ($this->checkRaceCard($checkRaceCardParams, $getDataFunction)) {
-                echo "すでにrace_infoに" . 'race_info_id=' . $raceInfoId . "uma_ban=" . $horceInfo['uma_ban'] . "のデータが存在しています。 \n";
+                echo "すでにrace_cardに" . 'race_info_id=' . $raceInfoId . "uma_ban=" . $horceInfo['uma_ban'] . "のデータが存在しています。 \n";
                 continue;
             }
 
@@ -275,7 +275,7 @@ class RaceInfoImport extends Base {
             // 実行
             $stmt->execute();
 
-            echo 'race_info_id=' . $raceInfoId . "uma_ban=" . $horceInfo['uma_ban'] . "のデータをrace_infoに作成成功しました。 \n";
+            echo 'race_info_id=' . $raceInfoId . "uma_ban=" . $horceInfo['uma_ban'] . "のデータをrace_cardに作成成功しました。 \n";
         }
     }
 

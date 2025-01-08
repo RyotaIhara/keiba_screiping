@@ -13,14 +13,13 @@ use Goutte\Client;
 
 $client = new Client();
 
-/*
 $startTargetYear = date('Y');
 $endTargetYear = date('Y');
-*/
-$startTargetYear = '2024';
-$endTargetYear = '2024';
+//$startTargetYear = '2024';
+//$endTargetYear = '2024';
+
 $startTargetMonth = '01';
-$endTargetMonth = '12';
+$endTargetMonth = '01';
 
 $targetDateParams = array(
     'startTargetYear' => $startTargetYear,

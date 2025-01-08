@@ -17,7 +17,15 @@ use Goutte\Client;
 $client = new Client();
 
 $getDataFunction = new GetDataFunction($client);
-$raceScheduleList = $getDataFunction->getRaceSchedule(array());
+
+$dateArray = array();
+/*
+$dateArray = [
+    'race_date' => '2025-01-01'
+];
+*/
+
+$raceScheduleList = $getDataFunction->getRaceSchedule($dateArray);
 
 foreach ($raceScheduleList as $raceSchedule) {
     list($year, $month, $day) = explode('-', $raceSchedule['race_date']);
